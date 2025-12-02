@@ -91,6 +91,9 @@
         .table-wrapper {
             overflow-x: auto;
             padding: 20px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+            position: relative;
         }
         
         table {
@@ -108,14 +111,17 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         th.name-col {
             min-width: 80px;
             position: sticky;
             left: 0;
+            top: 0;
             z-index: 11;
             background: #e8eaed;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
         }
         
         td {
