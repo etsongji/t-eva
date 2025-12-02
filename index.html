@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교사 다면평가 증빙자료 체크리스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #4285f4;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3367d6;
+        }
+        
+        .btn-secondary {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th.name-col {
+            min-width: 80px;
+            position: sticky;
+            left: 0;
+            z-index: 11;
+            background: #e8eaed;
+        }
+        
+        td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        
+        td.name-col {
+            position: sticky;
+            left: 0;
+            background: white;
+            font-weight: bold;
+            z-index: 9;
+        }
+        
+        tbody tr:hover td {
+            background: #f8f9fa;
+        }
+        
+        tbody tr:hover td.name-col {
+            background: #e8eaed;
+        }
+        
+        .checkbox-cell {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .completion-rate {
+            font-weight: bold;
+        }
+        
+        .completion-rate.high {
+            color: #0f9d58;
+        }
+        
+        .completion-rate.medium {
+            color: #f4b400;
+        }
+        
+        .completion-rate.low {
+            color: #db4437;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4285f4, #34a853);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .detail-btn {
+            background: #34a853;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .detail-btn:hover {
+            background: #2d8e47;
+        }
+        
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            background: #4285f4;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .evidence-section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .evidence-section h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .evidence-section input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .evidence-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .evidence-input:focus {
+            outline: none;
+            border-color: #4285f4;
+        }
+        
+        .multiple-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .input-with-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .input-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 30px;
+        }
+        
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            opacity: 0.8;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+            text-align: right;
+        }
+        
+        @media print {
+            .controls, .detail-btn, .modal {
+                display: none;
+            }
+            
+            .header {
+                background: white;
+                color: black;
+                border-bottom: 2px solid #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>교사 다면평가 증빙자료 제출 현황</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <span>총 교사:</span>
+                    <strong id="totalTeachers">0</strong>명
+                </div>
+                <div class="stat-item">
+                    <span>전체 제출률:</span>
+                    <strong id="overallRate">0%</strong>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="exportToCSV()">📥 CSV 다운로드</button>
+            <button class="btn btn-secondary" onclick="window.print()">🖨️ 인쇄</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🔄 전체 초기화</button>
+            <button class="btn btn-secondary" onclick="showIncomplete()">⚠️ 미제출자 보기</button>
+        </div>
+        
+        <div class="table-wrapper">
+            <table id="checklistTable">
+                <thead>
+                    <tr>
+                        <th class="name-col">교사명</th>
+                        <th>직무연수<br>이수시간</th>
+                        <th>학생지도<br>수상실적</th>
+                        <th>교내대회<br>추진</th>
+                        <th>교내대회<br>협조</th>
+                        <th>교외<br>전학공</th>
+                        <th>교내<br>전학공</th>
+                        <th>수업량<br>유연화<br>1학기</th>
+                        <th>수업량<br>유연화<br>2학기</th>
+                        <th>동아리</th>
+                        <th>주말인솔</th>
+                        <th>제출률</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 증빙자료 입력 모달 -->
+    <div id="evidenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">증빙자료 입력</h2>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveEvidence()">💾 저장</button>
+                <button class="btn btn-secondary" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const teachers = [
+            '강지연', '구도성', '김도영', '김상훈', '김용결', '김은빈', '김은지', '김현정',
+            '김혜민', '김혜인', '김호성', '김희수', '노유진', '문기예', '박지은', '박지훈',
+            '백승진', '서예림', '송예진', '송지언', '신동호', '신현준', '심소라', '안진형',
+            '위태용', '유금진', '육감우', '이병모', '이슬이', '이종찬', '이준현', '장인정',
+            '전효나', '전희주', '정순신', '정혜정', '조남혁', '최송아', '표민희', '하헌성',
+            '한건희', '황인환', '신우철', '권오미'
+        ];
+
+        const columns = [
+            { id: '직무연수이수시간', name: '직무연수 이수시간', type: 'single' },
+            { id: '학생지도수상실적', name: '학생지도 수상실적', type: 'single' },
+            { id: '교내대회추진', name: '교내대회 추진', type: 'single' },
+            { id: '교내대회협조', name: '교내대회 협조', type: 'single' },
+            { id: '교외전학공', name: '교외 전학공', type: 'single' },
+            { id: '교내전학공', name: '교내 전학공', type: 'single' },
+            { id: '수업량유연화1학기', name: '수업량 유연화 1학기', type: 'single' },
+            { id: '수업량유연화2학기', name: '수업량 유연화 2학기', type: 'single' },
+            { id: '동아리', name: '동아리', type: 'single' },
+            { id: '주말인솔', name: '주말인솔', type: 'multiple', maxCount: 5 }
+        ];
+
+        let checkData = {};
+        let evidenceData = {};
+        let currentTeacher = null;
+
+        function initializeData() {
+            teachers.forEach(teacher => {
+                checkData[teacher] = {};
+                evidenceData[teacher] = {};
+                columns.forEach(col => {
+                    checkData[teacher][col.id] = false;
+                    if (col.type === 'multiple') {
+                        evidenceData[teacher][col.id] = [];
+                    } else {
+                        evidenceData[teacher][col.id] = '';
+                    }
+                });
+            });
+            loadFromLocalStorage();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            teachers.forEach((teacher, idx) => {
+                const row = document.createElement('tr');
+                
+                // 교사명
+                const nameCell = document.createElement('td');
+                nameCell.className = 'name-col';
+                nameCell.textContent = teacher;
+                row.appendChild(nameCell);
+
+                // 체크박스들
+                columns.forEach(col => {
+                    const cell = document.createElement('td');
+                    cell.className = 'checkbox-cell';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = checkData[teacher][col.id];
+                    checkbox.onchange = (e) => {
+                        checkData[teacher][col.id] = e.target.checked;
+                        saveToLocalStorage();
+                        updateStats();
+                        updateCompletionRate(row, teacher);
+                    };
+                    
+                    cell.appendChild(checkbox);
+                    row.appendChild(cell);
+                });
+
+                // 제출률
+                const rateCell = document.createElement('td');
+                updateCompletionRate(row, teacher);
+                
+                // 증빙자료 입력 버튼
+                const detailBtn = document.createElement('button');
+                detailBtn.className = 'detail-btn';
+                detailBtn.textContent = '📝 증빙자료';
+                detailBtn.onclick = () => openModal(teacher);
+                rateCell.appendChild(detailBtn);
+                
+                row.appendChild(rateCell);
+
+                tbody.appendChild(row);
+            });
+
+            updateStats();
+        }
+
+        function updateCompletionRate(row, teacher) {
+            const rateCells = row.querySelectorAll('td');
+            const rateCell = rateCells[rateCells.length - 1];
+            const total = columns.length;
+            const completed = columns.filter(col => checkData[teacher][col.id]).length;
+            const rate = Math.round((completed / total) * 100);
+
+            const progressDiv = document.createElement('div');
+            progressDiv.innerHTML = `
+                <div class="completion-rate ${rate >= 80 ? 'high' : rate >= 50 ? 'medium' : 'low'}">
+                    ${rate}%
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${rate}%">
+                        ${completed}/${total}
+                    </div>
+                </div>
+            `;
+            
+            // 기존 버튼 유지
+            const existingBtn = rateCell.querySelector('.detail-btn');
+            rateCell.innerHTML = '';
+            rateCell.appendChild(progressDiv);
+            if (existingBtn) {
+                rateCell.appendChild(existingBtn);
+            }
+        }
+
+        function openModal(teacher) {
+            currentTeacher = teacher;
+            const modal = document.getElementById('evidenceModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `${teacher} 선생님 증빙자료 입력`;
+            modalBody.innerHTML = '';
+
+            columns.forEach(col => {
+                const section = document.createElement('div');
+                section.className = 'evidence-section';
+                
+                const title = document.createElement('h3');
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = checkData[teacher][col.id];
+                checkbox.onchange = (e) => {
+                    checkData[teacher][col.id] = e.target.checked;
+                };
+                
+                const titleText = document.createElement('span');
+                titleText.textContent = col.name;
+                
+                title.appendChild(checkbox);
+                title.appendChild(titleText);
+                section.appendChild(title);
+
+                if (col.type === 'multiple') {
+                    const multipleInputs = document.createElement('div');
+                    multipleInputs.className = 'multiple-inputs';
+                    
+                    for (let i = 0; i < col.maxCount; i++) {
+                        const inputWrapper = document.createElement('div');
+                        inputWrapper.className = 'input-with-label';
+                        
+                        const label = document.createElement('span');
+                        label.className = 'input-label';
+                        label.textContent = `${i + 1}번`;
+                        
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'evidence-input';
+                        input.placeholder = `공문번호 또는 증빙자료 ${i + 1}`;
+                        input.value = evidenceData[teacher][col.id][i] || '';
+                        input.dataset.colId = col.id;
+                        input.dataset.index = i;
+                        
+                        inputWrapper.appendChild(label);
+                        inputWrapper.appendChild(input);
+                        multipleInputs.appendChild(inputWrapper);
+                    }
+                    
+                    section.appendChild(multipleInputs);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'evidence-input';
+                    input.placeholder = '공문번호 또는 증빙자료 (예: 교무-1234)';
+                    input.value = evidenceData[teacher][col.id];
+                    input.dataset.colId = col.id;
+                    
+                    section.appendChild(input);
+                }
+
+                modalBody.appendChild(section);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('evidenceModal').style.display = 'none';
+            currentTeacher = null;
+        }
+
+        function saveEvidence() {
+            if (!currentTeacher) return;
+
+            const modalBody = document.getElementById('modalBody');
+            const sections = modalBody.querySelectorAll('.evidence-section');
+
+            sections.forEach((section, idx) => {
+                const col = columns[idx];
+                const checkbox = section.querySelector('input[type="checkbox"]');
+                checkData[currentTeacher][col.id] = checkbox.checked;
+
+                if (col.type === 'multiple') {
+                    const inputs = section.querySelectorAll('.evidence-input');
+                    evidenceData[currentTeacher][col.id] = [];
+                    inputs.forEach(input => {
+                        if (input.value.trim()) {
+                            evidenceData[currentTeacher][col.id].push(input.value.trim());
+                        }
+                    });
+                    // 증빙자료가 하나라도 있으면 자동 체크
+                    if (evidenceData[currentTeacher][col.id].length > 0) {
+                        checkData[currentTeacher][col.id] = true;
+                        checkbox.checked = true;
+                    }
+                } else {
+                    const input = section.querySelector('.evidence-input');
+                    evidenceData[currentTeacher][col.id] = input.value.trim();
+                    // 증빙자료가 있으면 자동 체크
+                    if (evidenceData[currentTeacher][col.id]) {
+                        checkData[currentTeacher][col.id] = true;
+                        checkbox.checked = true;
+                    }
+                }
+            });
+
+            saveToLocalStorage();
+            renderTable();
+            closeModal();
+        }
+
+        function updateStats() {
+            document.getElementById('totalTeachers').textContent = teachers.length;
+
+            let totalChecks = 0;
+            let totalPossible = teachers.length * columns.length;
+
+            teachers.forEach(teacher => {
+                columns.forEach(col => {
+                    if (checkData[teacher][col.id]) totalChecks++;
+                });
+            });
+
+            const overallRate = Math.round((totalChecks / totalPossible) * 100);
+            document.getElementById('overallRate').textContent = overallRate + '%';
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('teacherCheckData', JSON.stringify(checkData));
+            localStorage.setItem('teacherEvidenceData', JSON.stringify(evidenceData));
+        }
+
+        function loadFromLocalStorage() {
+            const savedCheck = localStorage.getItem('teacherCheckData');
+            const savedEvidence = localStorage.getItem('teacherEvidenceData');
+            
+            if (savedCheck) {
+                const savedData = JSON.parse(savedCheck);
+                teachers.forEach(teacher => {
+                    if (savedData[teacher]) {
+                        checkData[teacher] = savedData[teacher];
+                    }
+                });
+            }
+            
+            if (savedEvidence) {
+                const savedData = JSON.parse(savedEvidence);
+                teachers.forEach(teacher => {
+                    if (savedData[teacher]) {
+                        evidenceData[teacher] = savedData[teacher];
+                    }
+                });
+            }
+        }
+
+        function exportToCSV() {
+            let csv = '교사명,';
+            columns.forEach(col => {
+                if (col.type === 'multiple') {
+                    csv += col.name + ' 제출여부,';
+                    for (let i = 1; i <= col.maxCount; i++) {
+                        csv += col.name + ' ' + i + '번,';
+                    }
+                } else {
+                    csv += col.name + ' 제출여부,' + col.name + ' 증빙,';
+                }
+            });
+            csv += '제출률\n';
+
+            teachers.forEach(teacher => {
+                const row = [teacher];
+                
+                columns.forEach(col => {
+                    row.push(checkData[teacher][col.id] ? 'O' : 'X');
+                    
+                    if (col.type === 'multiple') {
+                        for (let i = 0; i < col.maxCount; i++) {
+                            row.push(evidenceData[teacher][col.id][i] || '');
+                        }
+                    } else {
+                        row.push(evidenceData[teacher][col.id] || '');
+                    }
+                });
+                
+                const completed = columns.filter(col => checkData[teacher][col.id]).length;
+                const rate = Math.round((completed / columns.length) * 100);
+                row.push(rate + '%');
+                
+                csv += row.map(field => `"${field}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', '교사다면평가_증빙자료_체크리스트.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAll() {
+            if (confirm('모든 체크와 증빙자료를 초기화하시겠습니까?')) {
+                teachers.forEach(teacher => {
+                    columns.forEach(col => {
+                        checkData[teacher][col.id] = false;
+                        if (col.type === 'multiple') {
+                            evidenceData[teacher][col.id] = [];
+                        } else {
+                            evidenceData[teacher][col.id] = '';
+                        }
+                    });
+                });
+                saveToLocalStorage();
+                renderTable();
+            }
+        }
+
+        function showIncomplete() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            let hasIncomplete = false;
+            
+            rows.forEach((row, idx) => {
+                const teacher = teachers[idx];
+                const completed = columns.filter(col => checkData[teacher][col.id]).length;
+                const rate = (completed / columns.length) * 100;
+                
+                if (rate < 100) {
+                    row.style.display = '';
+                    row.style.background = '#fff3cd';
+                    hasIncomplete = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (!hasIncomplete) {
+                alert('모든 교사가 100% 제출 완료했습니다! 🎉');
+                rows.forEach(row => {
+                    row.style.display = '';
+                    row.style.background = '';
+                });
+                return;
+            }
+
+            setTimeout(() => {
+                if (confirm('전체 목록을 다시 보시겠습니까?')) {
+                    rows.forEach(row => {
+                        row.style.display = '';
+                        row.style.background = '';
+                    });
+                }
+            }, 100);
+        }
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('evidenceModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // 초기화
+        initializeData();
+        renderTable();
+    </script>
+</body>
+</html>
