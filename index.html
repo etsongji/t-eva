@@ -390,7 +390,8 @@
                         <th>수업량<br>유연화<br>2학기</th>
                         <th>동아리</th>
                         <th>주말인솔</th>
-                        <th>제출률</th>
+                        <th>증빙자료</th>
+                        <th>제출완료</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -440,12 +441,14 @@
 
         let checkData = {};
         let evidenceData = {};
+        let completionData = {}; // 제출완료 체크
         let currentTeacher = null;
 
         function initializeData() {
             teachers.forEach(teacher => {
                 checkData[teacher] = {};
                 evidenceData[teacher] = {};
+                completionData[teacher] = false; // 제출완료 초기값
                 columns.forEach(col => {
                     checkData[teacher][col.id] = false;
                     if (col.type === 'multiple') {
@@ -483,60 +486,41 @@
                         checkData[teacher][col.id] = e.target.checked;
                         saveToLocalStorage();
                         updateStats();
-                        updateCompletionRate(row, teacher);
                     };
                     
                     cell.appendChild(checkbox);
                     row.appendChild(cell);
                 });
 
-                // 제출률
-                const rateCell = document.createElement('td');
-                row.appendChild(rateCell);
-                
-                // 제출률 업데이트
-                updateCompletionRate(row, teacher);
-                
                 // 증빙자료 입력 버튼
+                const evidenceCell = document.createElement('td');
                 const detailBtn = document.createElement('button');
                 detailBtn.className = 'detail-btn';
                 detailBtn.textContent = '📝 증빙자료';
                 detailBtn.onclick = () => openModal(teacher);
-                rateCell.appendChild(detailBtn);
+                evidenceCell.appendChild(detailBtn);
+                row.appendChild(evidenceCell);
+                
+                // 제출완료 체크박스
+                const completionCell = document.createElement('td');
+                completionCell.className = 'checkbox-cell';
+                const completionCheckbox = document.createElement('input');
+                completionCheckbox.type = 'checkbox';
+                completionCheckbox.checked = completionData[teacher];
+                completionCheckbox.style.width = '20px';
+                completionCheckbox.style.height = '20px';
+                completionCheckbox.onchange = (e) => {
+                    completionData[teacher] = e.target.checked;
+                    saveToLocalStorage();
+                    updateStats();
+                };
+                completionCell.appendChild(completionCheckbox);
+                row.appendChild(completionCell);
 
                 tbody.appendChild(row);
             });
 
             updateStats();
-        }
-
-        function updateCompletionRate(row, teacher) {
-            const total = columns.length;
-            const completed = columns.filter(col => checkData[teacher][col.id]).length;
-            const rate = Math.round((completed / total) * 100);
-
-            const rateCells = row.querySelectorAll('td');
-            const rateCell = rateCells[rateCells.length - 1];
-            
-            const progressDiv = document.createElement('div');
-            progressDiv.innerHTML = `
-                <div class="completion-rate ${rate >= 80 ? 'high' : rate >= 50 ? 'medium' : 'low'}">
-                    ${rate}%
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${rate}%">
-                        ${completed}/${total}
-                    </div>
-                </div>
-            `;
-            
-            // 기존 버튼 유지
-            const existingBtn = rateCell.querySelector('.detail-btn');
-            rateCell.innerHTML = '';
-            rateCell.appendChild(progressDiv);
-            if (existingBtn) {
-                rateCell.appendChild(existingBtn);
-            }
         }
 
         function openModal(teacher) {
@@ -659,27 +643,22 @@
         function updateStats() {
             document.getElementById('totalTeachers').textContent = teachers.length;
 
-            let totalChecks = 0;
-            let totalPossible = teachers.length * columns.length;
-
-            teachers.forEach(teacher => {
-                columns.forEach(col => {
-                    if (checkData[teacher][col.id]) totalChecks++;
-                });
-            });
-
-            const overallRate = Math.round((totalChecks / totalPossible) * 100);
+            // 제출완료한 교사 수 계산
+            const completedTeachers = teachers.filter(teacher => completionData[teacher]).length;
+            const overallRate = Math.round((completedTeachers / teachers.length) * 100);
             document.getElementById('overallRate').textContent = overallRate + '%';
         }
 
         function saveToLocalStorage() {
             localStorage.setItem('teacherCheckData', JSON.stringify(checkData));
             localStorage.setItem('teacherEvidenceData', JSON.stringify(evidenceData));
+            localStorage.setItem('teacherCompletionData', JSON.stringify(completionData));
         }
 
         function loadFromLocalStorage() {
             const savedCheck = localStorage.getItem('teacherCheckData');
             const savedEvidence = localStorage.getItem('teacherEvidenceData');
+            const savedCompletion = localStorage.getItem('teacherCompletionData');
             
             if (savedCheck) {
                 const savedData = JSON.parse(savedCheck);
@@ -698,6 +677,15 @@
                     }
                 });
             }
+            
+            if (savedCompletion) {
+                const savedData = JSON.parse(savedCompletion);
+                teachers.forEach(teacher => {
+                    if (savedData[teacher] !== undefined) {
+                        completionData[teacher] = savedData[teacher];
+                    }
+                });
+            }
         }
 
         function exportToCSV() {
@@ -712,7 +700,7 @@
                     csv += col.name + ' 제출여부,' + col.name + ' 증빙,';
                 }
             });
-            csv += '제출률\n';
+            csv += '제출완료\n';
 
             teachers.forEach(teacher => {
                 const row = [teacher];
@@ -729,9 +717,7 @@
                     }
                 });
                 
-                const completed = columns.filter(col => checkData[teacher][col.id]).length;
-                const rate = Math.round((completed / columns.length) * 100);
-                row.push(rate + '%');
+                row.push(completionData[teacher] ? 'O' : 'X');
                 
                 csv += row.map(field => `"${field}"`).join(',') + '\n';
             });
@@ -750,6 +736,7 @@
         function clearAll() {
             if (confirm('모든 체크와 증빙자료를 초기화하시겠습니까?')) {
                 teachers.forEach(teacher => {
+                    completionData[teacher] = false;
                     columns.forEach(col => {
                         checkData[teacher][col.id] = false;
                         if (col.type === 'multiple') {
@@ -770,10 +757,8 @@
             
             rows.forEach((row, idx) => {
                 const teacher = teachers[idx];
-                const completed = columns.filter(col => checkData[teacher][col.id]).length;
-                const rate = (completed / columns.length) * 100;
                 
-                if (rate < 100) {
+                if (!completionData[teacher]) {
                     row.style.display = '';
                     row.style.background = '#fff3cd';
                     hasIncomplete = true;
@@ -783,7 +768,7 @@
             });
 
             if (!hasIncomplete) {
-                alert('모든 교사가 100% 제출 완료했습니다! 🎉');
+                alert('모든 교사가 제출 완료했습니다! 🎉');
                 rows.forEach(row => {
                     row.style.display = '';
                     row.style.background = '';
