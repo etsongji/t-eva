@@ -486,6 +486,9 @@
 
                 // 제출률
                 const rateCell = document.createElement('td');
+                row.appendChild(rateCell);
+                
+                // 제출률 업데이트
                 updateCompletionRate(row, teacher);
                 
                 // 증빙자료 입력 버튼
@@ -494,8 +497,6 @@
                 detailBtn.textContent = '📝 증빙자료';
                 detailBtn.onclick = () => openModal(teacher);
                 rateCell.appendChild(detailBtn);
-                
-                row.appendChild(rateCell);
 
                 tbody.appendChild(row);
             });
@@ -504,12 +505,13 @@
         }
 
         function updateCompletionRate(row, teacher) {
-            const rateCells = row.querySelectorAll('td');
-            const rateCell = rateCells[rateCells.length - 1];
             const total = columns.length;
             const completed = columns.filter(col => checkData[teacher][col.id]).length;
             const rate = Math.round((completed / total) * 100);
 
+            const rateCells = row.querySelectorAll('td');
+            const rateCell = rateCells[rateCells.length - 1];
+            
             const progressDiv = document.createElement('div');
             progressDiv.innerHTML = `
                 <div class="completion-rate ${rate >= 80 ? 'high' : rate >= 50 ? 'medium' : 'low'}">
